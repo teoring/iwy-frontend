@@ -11,7 +11,20 @@ const routes =  [
             {
                 path: "/dashboard",
                 name: 'dashboard',
-                component: () => import('../components/MainPage.vue'),
+                component: () => import('../components/Dashboard.vue'),
+                meta: {
+                    requiresAuth: true
+                },
+
+                beforeEnter: ( to, from, next ) => {
+                    console.log( "store.state.auth.isLoggedIn: " + store.state.auth.isLoggedIn );
+                    next();
+                }
+            },
+            {
+                path: "/watcher/view",
+                name: 'watcher_view',
+                component: () => import('../components/WatcherView.vue'),
                 meta: {
                     requiresAuth: true
                 },

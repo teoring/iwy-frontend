@@ -56,6 +56,7 @@ export function useCommunication() {
             onRequestAbortedOrTimeoutRequest.push( subscriber );
             return subscriber.id;
         }
+
     }
 
     const unregisterCallback = ( callbackId ) =>

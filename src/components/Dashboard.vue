@@ -73,23 +73,68 @@
 
                         <template #grid="slotProps">
                             <div class="grid grid-nogutter">
-                                <div
-                                    v-for="(item, index) in slotProps.items"
-                                    :key="index"
-                                    class="col-12 sm:col-6 lg:col-12 xl:col-4 p-3"
-                                >
-                                    <div class="p-3 py-2 border-1 surface-border surface-card border-round">
-                                        <div class="flex flex-wrap align-items-center justify-content-between">
-                                            <div class="flex align-items-center gap-2 p-1 py-3 pl-2">
-                                                {{ item.title }}
+                            <div v-for="(item, index) in slotProps.items" :key="index" class="col-12 sm:col-6 md:col-4 p-2">
+                                <div class="p-4 border-1 surface-border surface-card border-round flex flex-column">
+                                    <div class="surface-50 flex justify-content-center border-round p-3">
+                                        <div class="relative mx-auto">
+                                            <Image :src='"http://localhost/screenshots/" + item._id + ".jpg"' v-if="extractedPrice != ''" alt="Image" width="250" preview />
 
-                                                <span class="">{{ item.link }} | {{ item.selector }} | {{ item.currentPrice }}  | {{ item.newPrice }} </span>
-                                                <Button size="small" @click=removeWatcher(item) class="p-2" icon="pi pi-times-circle"></Button>
+                                            <!-- <img class="border-round w-full" :src='"http://localhost/screenshots/" + item._id + ".jpg"' :alt="item.title" style="max-width: 300px" /> -->
+                                            <!-- <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute" style="left: 4px; top: 4px"></Tag> -->
+                                        </div>
+                                    </div>
+                                    <div class="pt-4">
+
+                                        <div class="flex flex-row justify-content-between align-items-start gap-2">
+                                            <div>
+                                                <span class="font-medium text-secondary text-sm">Product Name</span>
+                                                <div class="text-lg font-medium text-900 mt-1">{{ item.title }}</div>
+                                            </div>
+                                            <div class="surface-100 p-1" style="border-radius: 30px">
+                                                <div class="surface-0 flex align-items-center gap-2 justify-content-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                                    <!-- <span class="text-900 font-medium text-sm">{{ item.rating }}</span> -->
+                                                    <i class="pi pi-star-fill text-yellow-500"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-column gap-4 mt-4">
+                                            <span class="text-xl font-semibold text-900">Current price: {{ item.lastSeenPrice }}</span>
+                                            <div class="flex gap-2">
+                                                <Button icon="pi pi-directions" @click=redirectTo(item) label="View" class="flex-auto white-space-nowrap"></Button>
+                                                <Button size="small" severity="danger" @click=removeWatcher(item) class="p-2" icon="pi pi-times-circle"></Button>
+                                                <!-- <Button size="small" severity="info" class="p-2" icon="pi pi-directions"></Button> -->
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                            <!-- <div class="grid grid-nogutter">
+                                <div
+                                    v-for="(item, index) in slotProps.items"
+                                    :key="index"
+                                    class="col-12 sm:col-6 lg:col-12 xl:col-4 p-3"
+                                >
+                                    <div class="p-3 py-2 border-1 surface-border surface-card border-round" @click="onClick">
+                                        <div class="flex flex-wrap align-items-center justify-content-between">
+                                            <div class="flex align-items-center gap-2 p-1 py-3 pl-2">
+                                                <Image :src='"http://localhost/screenshots/" + item._id + ".jpg"' v-if="extractedPrice != ''" alt="Image" width="250" preview />
+
+                                                <a :href='"/watcher/view?_id=" + item._id' style="text-decoration: none;">
+                                                    {{ item.title }}
+                                                </a>
+
+                                                <span class="">{{ item.link }} | {{ item.selector }} | {{ item.currentPrice }}  | {{ item.newPrice }} </span>
+                                                <a :href="item.url" target="_blank" rel="noopener noreferrer">
+                                                    <Button size="small" severity="info" class="p-2" icon="pi pi-directions"></Button>
+                                                </a>
+                                                <Button size="small" severity="danger" @click=removeWatcher(item) class="p-2" icon="pi pi-times-circle"></Button>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
                         </template>
                     </DataView>
                 </div>
@@ -111,7 +156,7 @@ const { getClient } = useCommunication();
 import DynamicDialog from 'primevue/dynamicdialog';
 import { useDialog } from 'primevue/usedialog';
 
-import CreateWatcherDialog from '@/components/CreateWatcherDialog.vue';
+import CreateWatcher from '@/components/CreateWatcher.vue';
 
 import axios from "axios";
 
@@ -121,7 +166,7 @@ import { watch } from "vue";
 import { useStore } from "vuex";
 
 export default {
-    name: "MainPage",
+    name: "Dashboard",
     setup() {
         const store = useStore();
         const toast = useToast();
@@ -168,7 +213,7 @@ export default {
             if( input != "" ) {
                 foundWatchers = foundWatchers.filter( function( watcher ) {
                     let found = watcher.title.toLowerCase().search( input )  != -1 ||
-                                watcher.link.toLowerCase().search( input )     != -1 ||
+                                watcher.url.toLowerCase().search( input )     != -1 ||
                                 watcher.selector.toLowerCase().search( input ) != -1;
                     return found;
                 });
@@ -196,7 +241,7 @@ export default {
                     command: () => {
                         const dialog = this.$dialog;
 
-                        dialog.open( CreateWatcherDialog, {
+                        dialog.open( CreateWatcher, {
                             props: {
                                 header: 'Add watcher',
                                 style: {
@@ -218,6 +263,14 @@ export default {
         };
     },
     methods: {
+        redirectTo( item )
+        {
+            this.$router.push( { name: "watcher_view", query: { _id: item._id }  });
+        },
+        onClick()
+        {
+            console.log("TTT")
+        },
         getWatchers() {
             let this_ = this;
 
@@ -294,26 +347,5 @@ export default {
 }
 .p-dataview-header {
     padding: 0.5rem 1rem;
-}
-.p-tag-a-pp {
-    background-color: #63aa5a;
-}
-.p-tag-a-p {
-    background-color: #7bae4a;
-}
-.p-tag-a {
-    background-color: #bdd342;
-}
-.p-tag-b {
-    background-color: #ffe731;
-}
-.p-tag-c {
-    background-color: #fbb900;
-}
-.p-tag-d {
-    background-color: #fb8800;
-}
-.p-tag-e {
-    background-color: #e30613;
 }
 </style>

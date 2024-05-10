@@ -41,6 +41,7 @@ import DialogService from 'primevue/dialogservice';
 import DynamicDialog from 'primevue/dynamicdialog';
 import Steps from 'primevue/steps';
 import ProgressSpinner from 'primevue/progressspinner';
+import Chart from 'primevue/chart';
 
 import '@/assets/styles.scss';
 
@@ -85,6 +86,7 @@ app.component('Menubar', Menubar);
 app.component('DataView', DataView);
 app.component('SelectButton', SelectButton );
 app.component('ProgressSpinner', ProgressSpinner);
+app.component('Chart', Chart);
 
 app.use(store)
 app.use(router)
