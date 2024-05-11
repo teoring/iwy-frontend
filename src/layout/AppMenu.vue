@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { useRoutines } from "@/service/routines";
+import { useConfirm } from "primevue/useconfirm";
 
 import AppMenuItem from './AppMenuItem.vue';
 
@@ -9,6 +11,8 @@ import { SET_AUTHENTICATION, SET_JWT_TOKEN, SET_USER_INFO } from "../store/store
 
 const store = useStore();
 const router = useRouter();
+const routines = useRoutines();
+const confirm = useConfirm();
 
 function logout() {
 
@@ -25,7 +29,9 @@ const model = ref([
             {
                 label: "Dashboard",
                 icon: "pi pi-home",
-                command: () => { router.push({ name: "dashboard" }); }
+                command: () => {
+                    router.push({ name: "dashboard" });
+                }
             },
         ],
     },
@@ -35,7 +41,10 @@ const model = ref([
                 {
                     label: "Logout",
                     icon: "pi pi-sign-out",
-                    command: logout
+                    command: () => {
+                        console.log("CALLED")
+                        routines.logout( confirm );
+                    }
                 },
             ]
     }
@@ -47,6 +56,7 @@ const model = ref([
         <template v-for="(item, i) in model" :key="item">
             <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
+            <ConfirmDialog></ConfirmDialog>
         </template>
     </ul>
 </template>

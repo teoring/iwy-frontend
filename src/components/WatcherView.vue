@@ -92,8 +92,6 @@ import { useCommunication } from "@/client";
 
 const { getClient } = useCommunication();
 
-import axios from "axios";
-
 import { useToast } from "primevue/usetoast";
 import { watch } from "vue";
 import { useStore } from "vuex";
@@ -137,15 +135,12 @@ export default {
         );
     },
     mounted() {
-        this.chartData = this.setChartData();
+        this.chartData = this.setChartData( [] );
         this.chartOptions = this.setChartOptions();
     },
     beforeMount() {
         this.getWatcher();
         this.getSnapshots();
-
-        // this.chartData = setChartData();
-        // this.chartOptions = setChartOptions();
     },
     data() {
         return {
@@ -157,8 +152,8 @@ export default {
             chartOptions: {},
             menuItems: ref([
                 {
-                    label: 'All watchers',
-                    icon: 'pi pi-list',
+                    label: 'Back',
+                    icon: 'pi pi-arrow-left',
                     command: () => {
                         this.$router.push( { name: "dashboard" });
                     }
@@ -167,16 +162,45 @@ export default {
         };
     },
     methods: {
-        setChartData() 
+        strToNum( price ) {
+            let strippedPrice = price.replace(/[^\d.-]/g, '');
+            return parseFloat( strippedPrice );
+        },
+        setChartData( snapshots ) 
         {
+            let labels = [];
+            let data = [];
+
+            snapshots.sort( function( a, b ) {
+                return a.ts - b.ts;
+            });
+
+            for( let i = 0; i < snapshots.length; ++i ) {
+                if( snapshots[i].status == "success" ) {
+                    console.log( snapshots[i] )
+
+                    let dt = new Date( snapshots[i].ts );
+                    console.log( dt )
+
+                    let month = dt.getMonth() + 1;
+                    let day = dt.getDate();
+
+                    labels.push( day + "/" + month );
+                    data.push( this.strToNum( snapshots[i].price ) );
+                }
+            }
+
+            console.log( labels );
+            console.log( data );
+
             const documentStyle = getComputedStyle(document.documentElement);
 
             return {
-                labels: ['10/03', '11/03', '12/03', '13/03', '14/03', '15/03', '16/03'],
+                labels: labels,
                 datasets: [
                     {
                         label: 'Item Price',
-                        data: [65, 59, 80, 81, 56, 55, 40, 40],
+                        data: data,
                         fill: false,
                         borderColor: documentStyle.getPropertyValue('--cyan-500'),
                         tension: 0.1
@@ -266,18 +290,19 @@ export default {
                     .then( (response) => {
                         if( response && response.data && response.data.snapshots ) {
                             console.log( response.data.snapshots)
-                            this.snapshots = response.data.snapshots;
+                            this_.snapshots = response.data.snapshots;
+                            this_.chartData = this_.setChartData( response.data.snapshots );
                         } else {
                             this.showToast( "error", "Unexpected error. Refresh the page and try again." );
                         }
 
                 }).catch( (error) => {
 
-                    if( error.response.status == 401 ) {
+                    if( error.response && error.response.status == 401 ) {
                         console.log( error )
                         this_.logout();
                     }
-                    console.log( "Unexpected error: " + JSON.stringify( error ) );
+                    console.log( error );
                 });
             }
         },
@@ -301,7 +326,7 @@ export default {
 
                 }).catch( (error) => {
 
-                    if( error.response.status == 401 ) {
+                    if( error.response && error.response.status == 401 ) {
                         console.log( error )
                         this_.logout();
                     }

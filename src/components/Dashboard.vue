@@ -60,7 +60,7 @@
 
                         <template #header>
                             <div>
-                                <div class="flex  flex-wrap justify-content-end align-items-center gap-3">
+                                <div class="flex flex-wrap justify-content-end align-items-center gap-3">
                                     <Menubar :model="menuItems" />
 
                                     <span class="p-input-icon-left">
@@ -77,29 +77,24 @@
                                 <div class="p-4 border-1 surface-border surface-card border-round flex flex-column">
                                     <div class="surface-50 flex justify-content-center border-round p-3">
                                         <div class="relative mx-auto">
-                                            <Image :src='"http://localhost/screenshots/" + item._id + ".jpg"' v-if="extractedPrice != ''" alt="Image" width="250" preview />
+                                            <Image :src='"http://localhost/screenshots/" + item._id + ".jpg"' width="250" alt="Image" preview />
 
                                             <!-- <img class="border-round w-full" :src='"http://localhost/screenshots/" + item._id + ".jpg"' :alt="item.title" style="max-width: 300px" /> -->
                                             <!-- <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute" style="left: 4px; top: 4px"></Tag> -->
                                         </div>
                                     </div>
-                                    <div class="pt-4">
+                                    <div class="pt-2">
 
-                                        <div class="flex flex-row justify-content-between align-items-start gap-2">
+                                        <div class="gap-1">
                                             <div>
-                                                <span class="font-medium text-secondary text-sm">Product Name</span>
-                                                <div class="text-lg font-medium text-900 mt-1">{{ item.title }}</div>
-                                            </div>
-                                            <div class="surface-100 p-1" style="border-radius: 30px">
-                                                <div class="surface-0 flex align-items-center gap-2 justify-content-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
-                                                    <!-- <span class="text-900 font-medium text-sm">{{ item.rating }}</span> -->
-                                                    <i class="pi pi-star-fill text-yellow-500"></i>
-                                                </div>
+                                                <!-- <span class="font-medium text-secondary text-sm">Product Name</span> -->
+                                                <div class="text-xl font-semibold text-900">{{ item.title }}</div>
                                             </div>
                                         </div>
-                                        <div class="flex flex-column gap-4 mt-4">
-                                            <span class="text-xl font-semibold text-900">Current price: {{ item.lastSeenPrice }}</span>
-                                            <div class="flex gap-2">
+                                        <div class="flex flex-column mt-2">
+                                            <span class="text-s font-medium text-900">Current price: {{ item.lastSeenPrice }}</span>
+                                            <span class="pt-2 font-medium text-secondary text-sm">Target price: €{{ item.targetPrice }}</span>
+                                            <div class="flex gap-2 pt-3">
                                                 <Button icon="pi pi-directions" @click=redirectTo(item) label="View" class="flex-auto white-space-nowrap"></Button>
                                                 <Button size="small" severity="danger" @click=removeWatcher(item) class="p-2" icon="pi pi-times-circle"></Button>
                                                 <!-- <Button size="small" severity="info" class="p-2" icon="pi pi-directions"></Button> -->
@@ -109,32 +104,6 @@
                                 </div>
                             </div>
                         </div>
-                            <!-- <div class="grid grid-nogutter">
-                                <div
-                                    v-for="(item, index) in slotProps.items"
-                                    :key="index"
-                                    class="col-12 sm:col-6 lg:col-12 xl:col-4 p-3"
-                                >
-                                    <div class="p-3 py-2 border-1 surface-border surface-card border-round" @click="onClick">
-                                        <div class="flex flex-wrap align-items-center justify-content-between">
-                                            <div class="flex align-items-center gap-2 p-1 py-3 pl-2">
-                                                <Image :src='"http://localhost/screenshots/" + item._id + ".jpg"' v-if="extractedPrice != ''" alt="Image" width="250" preview />
-
-                                                <a :href='"/watcher/view?_id=" + item._id' style="text-decoration: none;">
-                                                    {{ item.title }}
-                                                </a>
-
-                                                <span class="">{{ item.link }} | {{ item.selector }} | {{ item.currentPrice }}  | {{ item.newPrice }} </span>
-                                                <a :href="item.url" target="_blank" rel="noopener noreferrer">
-                                                    <Button size="small" severity="info" class="p-2" icon="pi pi-directions"></Button>
-                                                </a>
-                                                <Button size="small" severity="danger" @click=removeWatcher(item) class="p-2" icon="pi pi-times-circle"></Button>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
                         </template>
                     </DataView>
                 </div>
@@ -164,6 +133,7 @@ import { useDateFormat } from "@vueuse/core";
 import { useToast } from "primevue/usetoast";
 import { watch } from "vue";
 import { useStore } from "vuex";
+import { useConfirm } from "primevue/useconfirm";
 
 export default {
     name: "Dashboard",
@@ -234,6 +204,7 @@ export default {
             watchers: [],
             selected_watchers: [],
             layout: ref("grid"),
+            confirm: ref( useConfirm() ),
             menuItems: ref([
                 {
                     label: 'Add watcher',
@@ -267,10 +238,6 @@ export default {
         {
             this.$router.push( { name: "watcher_view", query: { _id: item._id }  });
         },
-        onClick()
-        {
-            console.log("TTT")
-        },
         getWatchers() {
             let this_ = this;
 
@@ -297,19 +264,30 @@ export default {
         removeWatcher( watcher ) {
             let this_ = this;
 
-            console.log( watcher )
-            this.client.post("api/v1/watcher/remove", {
-                    watcher
-            })
-            .then( (response) => {
-                console.log( "REMOVED" )
-                
-                this_.searchInput = ""
-                this_.watchers = this_.watchers.filter( item => watcher._id != item._id )
-                this_.selected_watchers = this_.watchers;
+            this.confirm.require({
+                message: 'Are you sure you want to delete the watcher?',
+                header: 'Confirmation',
+                icon: 'pi pi-exclamation-triangle',
+                rejectClass: 'p-button-secondary p-button-outlined',
+                rejectLabel: 'Cancel',
+                acceptLabel: 'Yes',
+                accept: () => {
+                    console.log( watcher )
+                    // this.client.post("api/v1/watcher/remove", {
+                    //         watcher
+                    // })
+                    // .then( (response) => {
+                    //     this_.searchInput = ""
+                    //     this_.watchers = this_.watchers.filter( item => watcher._id != item._id )
+                    //     this_.selected_watchers = this_.watchers;
 
-            }).catch( (error) => {
-                console.log( "Unexpected error: " + JSON.stringify( error ) );
+                    // }).catch( (error) => {
+                    //     console.log( "Unexpected error: " + JSON.stringify( error ) );
+                    // });
+                },
+                reject: () => {
+                    
+                }
             });
         },
         onDataViewPageChanged() {
@@ -342,7 +320,7 @@ export default {
     font-size: 0.9rem;
 }
 .prop-chip img {
-    width: 1.5rem;
+    width: 0.5rem;
     height: 1.5rem;
 }
 .p-dataview-header {

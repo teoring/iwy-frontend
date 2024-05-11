@@ -32,7 +32,7 @@
 
                         <InputText class="w-7" placeholder="Target price" disabled />
 
-                        <InputNumber v-model="watcher.targetPrice" />
+                        <InputNumber v-model="watcher.targetPrice" :minFractionDigits="1" :maxFractionDigits="2" />
                     </InputGroup>
                     
                 </div>
@@ -55,7 +55,6 @@
                 <div class="justify-end">
                     <Button label="Verify" @click=onVerify v-if="extractedPrice == ''"/>
                     <Button label="Submit" severity="success"  @click=onSubmit v-if="extractedPrice != ''" />
-
                     <Button class="ml-2" label="Cancel" @click=onCancel />
                 </div>
 

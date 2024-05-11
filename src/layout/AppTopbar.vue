@@ -18,7 +18,7 @@ onBeforeUnmount(() => {
 });
 
 const logoUrl = computed(() => {
-    return `/footer_logo.png`;
+    return `/iwy_logo_1.png`;
 });
 
 const onTopBarMenuButton = () => {
@@ -63,8 +63,7 @@ const isOutsideClicked = (event) => {
 <template>
     <div class="layout-topbar">
         <router-link to="/dashboard" class="layout-topbar-logo">
-            <img :src="logoUrl" alt="logo" class="object-fill	" />
-            <span>Iwy</span>
+            <img :src="logoUrl" alt="logo" class="object-fill pl-1" />
         </router-link>
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">

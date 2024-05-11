@@ -42,6 +42,8 @@ import DynamicDialog from 'primevue/dynamicdialog';
 import Steps from 'primevue/steps';
 import ProgressSpinner from 'primevue/progressspinner';
 import Chart from 'primevue/chart';
+import ConfirmDialog from 'primevue/confirmdialog';
+import ConfirmationService from 'primevue/confirmationservice';
 
 import '@/assets/styles.scss';
 
@@ -49,13 +51,15 @@ const app = createApp(App);
 
 app.use(DialogService);
 app.use(PrimeVue, { ripple: true });
+app.use(ConfirmationService);
 
 app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);
 app.directive('ripple', Ripple);
 app.directive('styleclass', StyleClass);
 
-app.component('Steps', Steps);
+app.component('ConfirmDialog', ConfirmDialog);
+ app.component('Steps', Steps);
 app.component('DynamicDialog', DynamicDialog);
 app.component('Divider', Divider);
 app.component('Dialog', Dialog);
