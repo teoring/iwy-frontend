@@ -37,7 +37,7 @@
                     
                 </div>
                 <div class="col-12 md:col-6 text-center ">
-                    <Image :src='"http://localhost/screenshots/" + snapshot._id + ".jpg"' v-if="extractedPrice != ''" alt="Image" width="300" preview />
+                    <Image :src='config.nginxAdd + "/screenshots/" + snapshot._id + ".jpg"' v-if="extractedPrice != ''" alt="Image" width="300" preview />
 
                     <ProgressSpinner style="width: 50px; height: 50px"  strokeWidth="8" fill="var(--surface-ground)"
     animationDuration=".5s" aria-label="Custom ProgressSpinner" v-if="verificationInProgress"  />
@@ -76,8 +76,6 @@ import axios from "axios";
 import { useToast } from "primevue/usetoast";
 import { watch } from "vue";
 import { useStore } from "vuex";
-
-import Config from "../config";
 
 import { inject } from "vue";
 
@@ -126,6 +124,7 @@ export default {
     },
     data() {
         return {
+            config: config,
             extractedPrice: 0,
             verificationInProgress: false,
             dialogRef: inject('dialogRef'),

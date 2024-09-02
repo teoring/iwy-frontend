@@ -14,14 +14,6 @@ const router = useRouter();
 const routines = useRoutines();
 const confirm = useConfirm();
 
-function logout() {
-
-    store.commit(`auth/${SET_AUTHENTICATION}`, false);
-    store.commit(`auth/${SET_JWT_TOKEN}`, "");
-    store.commit(`auth/${SET_USER_INFO}`, {});
-    router.push({ name: "login" });
-}
-
 const model = ref([
 {
         label: "Home",

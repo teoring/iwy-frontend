@@ -6,6 +6,7 @@ import AppLayout from '@/layout/AppLayout.vue';
 const routes =  [
     {
         path: '/',
+        redirect: { path: "/dashboard" },
         component: AppLayout,
         children: [
             {
@@ -17,6 +18,7 @@ const routes =  [
                 },
 
                 beforeEnter: ( to, from, next ) => {
+                    console.log( "test ")
                     console.log( "store.state.auth.isLoggedIn: " + store.state.auth.isLoggedIn );
                     next();
                 }
@@ -68,7 +70,7 @@ router.beforeEach((to, from, next) => {
       // this route requires auth, check if logged in
       // if not, redirect to login page.
       if( ! store.state.auth.isLoggedIn ) {
-        next( { name: 'login' } )
+        next( { name: 'login', params: { expried: true }, replace: true } )
       } else {
         next() // go to wherever I'm going
       }

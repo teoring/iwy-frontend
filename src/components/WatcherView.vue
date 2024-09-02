@@ -37,7 +37,7 @@
                     <div class="flex flex-wrap ">
                         
                         <div class="col-12 md:col-4">
-                            <Image :src='"http://localhost/screenshots/" + watcher._id + ".jpg"' alt="Image" width="300" preview />
+                            <Image :src='config.nginxAdd + "/screenshots/" + watcher._id + ".jpg"' alt="Image" width="300" preview />
 
                         </div>
                         <div class="col-12 md:col-8">
@@ -144,6 +144,7 @@ export default {
     },
     data() {
         return {
+            config: config,
             watcherChanged: false,
             client: getClient( 2000 ),
             watcher: {},

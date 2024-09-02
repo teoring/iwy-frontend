@@ -77,7 +77,7 @@
                                 <div class="p-4 border-1 surface-border surface-card border-round flex flex-column">
                                     <div class="surface-50 flex justify-content-center border-round p-3">
                                         <div class="relative mx-auto">
-                                            <Image :src='"http://localhost/screenshots/" + item._id + ".jpg"' width="250" alt="Image" preview />
+                                            <Image :src='config.nginxAdd + "/screenshots/" + item._id + ".jpg"' width="250" alt="Image" preview />
 
                                             <!-- <img class="border-round w-full" :src='"http://localhost/screenshots/" + item._id + ".jpg"' :alt="item.title" style="max-width: 300px" /> -->
                                             <!-- <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute" style="left: 4px; top: 4px"></Tag> -->
@@ -92,7 +92,8 @@
                                             </div>
                                         </div>
                                         <div class="flex flex-column mt-2">
-                                            <span class="text-s font-medium text-900">Current price: {{ item.lastSeenPrice }}</span>
+                                            <span :class="{ discounted_price: item.discounted, text_900: ! item.discounted }" class="text-s font-medium">Current price: {{ item.lastSeenPrice }}</span>
+                                            <span class="pt-2 font-medium text-secondary text-sm">Original price: {{ item.originalPrice }}</span>
                                             <span class="pt-2 font-medium text-secondary text-sm">Target price: €{{ item.targetPrice }}</span>
                                             <div class="flex gap-2 pt-3">
                                                 <Button icon="pi pi-directions" @click=redirectTo(item) label="View" class="flex-auto white-space-nowrap"></Button>
@@ -199,6 +200,7 @@ export default {
     },
     data() {
         return {
+            config: config,
             client: getClient( 2000 ),
             searchInput: null,
             watchers: [],
@@ -245,24 +247,48 @@ export default {
                 .then( (response) => {
                     console.log( response )
                     if( response && response.data && response.data.watchers ) {
-                        this.searchInput = ""
-                        this.watchers = response.data.watchers;
-                        this.selected_watchers = response.data.watchers;
+                        this_.processWatchers( response.data.watchers );
                     } else {
-                        this.showToast( "error", "Unexpected error. Refresh the page and try again." );
+                        this_.showToast( "error", "Unexpected error. Refresh the page and try again." );
                     }
 
             }).catch( (error) => {
+                console.log( error )
 
-                if( error.response.status == 401 ) {
-                    console.log( error )
+                if(  error.response && error.response.status == 401 ) {
                     this_.logout();
                 }
+    
                 console.log( "Unexpected error: " + JSON.stringify( error ) );
             });
         },
+        strToNum( price ) {
+            let strippedPrice = price.replace(/[^\d.-]/g, '');
+            return parseFloat( strippedPrice );
+        },
+        processWatchers( watchers ) {
+            console.log( watchers )
+            this.searchInput = "";
+
+            watchers.forEach( watcher => {
+                let currPrice = this.strToNum( watcher.lastSeenPrice );
+                // let targetPrice = this.strToNum( watcher.targetPrice );
+                let originalPrice = this.strToNum( watcher.originalPrice );
+                
+                // If current price below original price, mark it as green
+                watcher.discounted = false;
+                if( currPrice < originalPrice ) {
+                    watcher.discounted = true;
+                }
+            });
+
+            this.watchers = watchers;
+            this.selected_watchers = watchers;
+        },
         removeWatcher( watcher ) {
             let this_ = this;
+
+            console.log( "removeWatcher called" )
 
             this.confirm.require({
                 message: 'Are you sure you want to delete the watcher?',
@@ -273,17 +299,16 @@ export default {
                 acceptLabel: 'Yes',
                 accept: () => {
                     console.log( watcher )
-                    // this.client.post("api/v1/watcher/remove", {
-                    //         watcher
-                    // })
-                    // .then( (response) => {
-                    //     this_.searchInput = ""
-                    //     this_.watchers = this_.watchers.filter( item => watcher._id != item._id )
-                    //     this_.selected_watchers = this_.watchers;
-
-                    // }).catch( (error) => {
-                    //     console.log( "Unexpected error: " + JSON.stringify( error ) );
-                    // });
+                    this.client.post("api/v1/watcher/remove", {
+                            watcher
+                    })
+                    .then( (response) => {
+                        this_.searchInput = ""
+                        this_.watchers = this_.watchers.filter( item => watcher._id != item._id )
+                        this_.selected_watchers = this_.watchers;
+                    }).catch( (error) => {
+                        console.log( "Unexpected error: " + JSON.stringify( error ) );
+                    });
                 },
                 reject: () => {
                     
@@ -325,5 +350,13 @@ export default {
 }
 .p-dataview-header {
     padding: 0.5rem 1rem;
+}
+
+.discounted_price {
+    color: #32de84;
+}
+
+.text_900 {
+    color: var(--surface-900) !important;
 }
 </style>
